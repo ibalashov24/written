@@ -1,0 +1,121 @@
+\documentclass[conference]{IEEEtran}
+%\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\usepackage[switch]{lineno}
+
+\usepackage{stmaryrd}
+
+
+\begin{document}
+\linenumbers
+\title{Linear Algebra Partial Evaluation Using AnyDSL*\\
+{\footnotesize \textsuperscript{*}Note: NOT FINAL}
+\thanks{Identify applicable funding agency here. If none, delete this.}
+}
+
+\author{\IEEEauthorblockN{Ilya Balashov}
+\IEEEauthorblockA{\textit{Saint Petersburg State University} \\
+7/9 Universitetskaya nab., \\ St. Petersburg, 199034 Russia \\
+i.balashov@2017.spbu.ru}
+\and
+\IEEEauthorblockN{Semyon Grigorev}
+\IEEEauthorblockA{\textit{Saint Petersburg State University} \\
+7/9 Universitetskaya nab., \\ St. Petersburg, 199034 Russia \\
+s.v.grigoriev@spbu.ru
+}
+\and
+\IEEEauthorblockN{Daniil Berezun}
+\IEEEauthorblockA{\textit{Saint Petersburg State University} \\
+7/9 Universitetskaya nab., \\ St. Petersburg, 199034 Russia \\
+\textcolor{red}{SPBU email!}}
+}
+\maketitle
+
+\begin{abstract}
+This document is a model and instructions for \LaTeX.
+This and the IEEEtran.cls file define the components of your paper [title, text, heads, etc.]. *CRITICAL: Do Not Use Symbols, Special Characters, Footnotes, 
+or Math in Paper Title or Abstract.
+\end{abstract}
+
+\begin{IEEEkeywords}
+component, formatting, style, styling, insert
+\end{IEEEkeywords}
+
+\section{Introduction}
+Recent years have seen a significant increase in sizes and complexity of programs in different areas of software engineering. [] High loaded system are being employed by noticeable number of projects, and therefore, requirements for program execution time tightened strongly. [] 
+
+A possible way of satisfying these requirements is usage of automatic optimisation tools and techniques, operating with program sources. For instance, so-called \textit{partial evaluation} (or specialization) technique is being actively used over last years as a way to optimize program execution time automatically using data known statically. [AnyDSL, Alexey T.] A special tool named \textit{partial evaluator} (or specializer) analyzes data (for example, function parameters) which was provided ahead of evaluation time and applies several program optimization techniques based on the structure of this data. Despite being known and employed in theoretical studies for more than 40 years, partial evaluation still provides a huge space for both theoretical and practical study. 
+
+One of the possible applications of partial evaluation is optimization of algorithms expressed in terms of linear algebra. It is well-known [] that many graph algorithms could be constructed using the language of some basic operations: matrix multiplication, Kronecker product etc. Moreover, it is possible to use matrices as a data storage in algorithms from a very different areas, for example, bioinformatics [], algorithms on strings [] or ray tracing []. If it is possible to build an algorithm (or representation of it's data) using some relatively small algorithmic bricks, therefore, it could be possible to utilize bricks, which are small and statically known, for optimization purposes using partial evalution technique.
+
+Existing results in the area of applied usage of partial evaluation for automatic linear algorithm optimization are limited by several partially successful experiments with CUDA- and Clang-based partial evaluators. So, the main contribution of this work  will be providing some experiments on linear algebra partial evaluation with AnyDSL framework on CPU. We will present that partial evaluation using this specific partial evaluation tool gives significant increase in execution times of all tested algorithms on the most of given datasets.
+
+
+\section{Background}
+
+\subsection{Partial evaluation}
+
+Let's suppose:
+
+\begin{itemize}
+	\item $P$ is a program, which takes values $a_n\ [n=1..m]$ as an input
+	\item $mix$ is a program which is defined as $mix\ [P, a_1] = P_a$
+	\item $\llbracket P \rrbracket [a_1, a_2, .., a_m] = \llbracket P_a \rrbracket [a_2, .., a_m]$
+\end{itemize}
+Then the transformation of $P$ and $a_1$ to $P_a$ using $mix$ is called \textit{partial evaluation}. Program $mix$ is called \textit{partial evaluator}. In other words, partial evaluation is a technique for evaluating parts of the program ahead of compilation with the usage of static input data.
+
+Despite partial evaluation is initially being used by Ershov [], Jones [] and other scientist for compiler generation via Futamura projections [], it could also be used for program optimization. For instance, partial evaluator can employ static data to unfold loops and conditional operators, propagate constants, etc []. 
+
+% Difficulties of PE
+However partial evaluation is a powerful method of program optimization, it is inherent in several difficulties. Firstly, partial evaluator could inflate source code size heavily because of transformation such as loop unfolding and static data substitution. Therefore, evaluation results (code structure, bottlenecks, etc.) \textcolor{red}{formal} assessment becomes a non-trivial problem very often. To solve issue in some degree, modern tools like AnyDSL [] tends to translate evaluated code into some intermediate representation which is often much easier to understand and analyze. Secondly, divergent program partial evaluation with the application of average-quality tool may lead to the evaluation process divergence. [Jones] So, the programmer have to be very careful while using this technique for optimization purposes. Finally, partial evaluation imposes serious requirements on the programmer qualification: deep understanding of evaluation process is highly required. To solve this issue modern tools are introducing simplified language constructions, such as a special partial evaluation wrappers [AnyDSL paper], attribute-driven evaluation [LLVM.mix paper?] and many other various and creative methods.
+
+\subsection{Graph algorithms in the linear algebra language}
+
+It is widely known that many of graph algorithms could be explained in the language of matrices. [G] Linear algebra allows constructing algorithms like Breadth-First Search or Shortest Path Search with exploitation of basic linear algebra operations: matrix multiplication, Kronecker product, etc. [G]
+
+For instance, one may write down Breadth-First Search in the manner of (listing). Each iteration of the algorithm represents one matrix-vector multiplication.
+\bigskip
+
+\colorbox{red}{Formula/Code Listing}
+\bigskip
+
+Therefore, if it was possible to speed up different matrix multiplication algorithms, it would be possible to speed up a large class of algorithms. 
+
+One of the possible basic sets of linear algebra algorithms and operations for graph algorithm construction is named \textit{GraphBLAS} standard. However SuiteSparse GraphBLAS is usually considered as the state-of-art implementation of this standart [GRB repo], there are a number of custom wrappers and implementations in Python [Orachev], C\# [gh], ...
+
+\section{Related work}
+
+Partial evaluation of linear algebra (matrix algorithms) was studied before in several papers.
+
+Firstly, colleagues measured [Tyurin, 2020] that partial evaluation of matrix convolution and pattern matching algorithms using AnyDSL framework [site] and CUDA [] reduces execution times significantly on the most datasets.
+
+Secondly, some research was performed on Viterbi algorithm partial evaluation. [Tyulyandin ?] \textcolor{red}{There should be the description of Ivan's work. I do not understand the topic enough at the moment}
+
+Also, AnyDSL team provided papers [Stincillia paper] on application of partial evaluation for image processing purposes in their library named Stincillia [link to lib]. It was measured that partial evaluation speeds algorithms up to 10 times comparing to not evaluated ones on the selected datasets.
+
+[Something more]
+
+
+\begin{thebibliography}{00}
+\bibitem{b1} G. Eason, B. Noble, and I. N. Sneddon, ``On certain integrals of Lipschitz-Hankel type involving products of Bessel functions,'' Phil. Trans. Roy. Soc. London, vol. A247, pp. 529--551, April 1955.
+\bibitem{b2} J. Clerk Maxwell, A Treatise on Electricity and Magnetism, 3rd ed., vol. 2. Oxford: Clarendon, 1892, pp.68--73.
+\bibitem{b3} I. S. Jacobs and C. P. Bean, ``Fine particles, thin films and exchange anisotropy,'' in Magnetism, vol. III, G. T. Rado and H. Suhl, Eds. New York: Academic, 1963, pp. 271--350.
+\bibitem{b4} K. Elissa, ``Title of paper if known,'' unpublished.
+\bibitem{b5} R. Nicole, ``Title of paper with only first word capitalized,'' J. Name Stand. Abbrev., in press.
+\bibitem{b6} Y. Yorozu, M. Hirano, K. Oka, and Y. Tagawa, ``Electron spectroscopy studies on magneto-optical media and plastic substrate interface,'' IEEE Transl. J. Magn. Japan, vol. 2, pp. 740--741, August 1987 [Digests 9th Annual Conf. Magnetics Japan, p. 301, 1982].
+\bibitem{b7} M. Young, The Technical Writer's Handbook. Mill Valley, CA: University Science, 1989.
+\end{thebibliography}
+\vspace{12pt}
+\color{red}
+IEEE conference templates contain guidance text for composing and formatting conference papers. Please ensure that all template text is removed from your conference paper prior to submission to the conference. Failure to remove the template text from your paper may result in your paper not being published.
+
+\end{document}
