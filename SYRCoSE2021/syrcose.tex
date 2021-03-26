@@ -57,7 +57,7 @@ A possible way of satisfying these requirements is usage of automatic optimisati
 
 One of the possible applications of partial evaluation is optimization of algorithms expressed in terms of linear algebra. It is well-known [] that many graph algorithms could be constructed using the language of some basic operations: matrix multiplication, Kronecker product etc. Moreover, it is possible to use matrices as a data storage in algorithms from a very different areas, for example, bioinformatics [], algorithms on strings [] or ray tracing []. If it is possible to build an algorithm (or representation of it's data) using some relatively small algorithmic bricks, therefore, it could be possible to utilize bricks, which are small and statically known, for optimization purposes using partial evalution technique.
 
-Existing results in the area of applied usage of partial evaluation for automatic linear algorithm optimization are limited by several partially successful experiments with CUDA- and Clang-based partial evaluators. So, the main contribution of this work  will be providing some experiments on linear algebra partial evaluation with AnyDSL framework on CPU. We will present that partial evaluation using this specific partial evaluation tool gives significant increase in execution times of all tested algorithms on the most of given datasets.
+Existing results in the area of applied usage of partial evaluation for automatic linear algorithm optimization are limited by several partially successful experiments with CUDA- and Clang-based partial evaluators. So, the main contribution of this work  will be providing some experiments on linear algebra partial evaluation with AnyDSL framework on CPU. We will show that partial evaluation using this specific partial evaluation tool gives significant increase in execution times of all tested algorithms on the most of given datasets.
 
 
 \section{Background}
@@ -91,6 +91,80 @@ For instance, one may write down Breadth-First Search in the manner of (listing)
 Therefore, if it was possible to speed up different matrix multiplication algorithms, it would be possible to speed up a large class of algorithms. 
 
 One of the possible basic sets of linear algebra algorithms and operations for graph algorithm construction is named \textit{GraphBLAS} standard. However SuiteSparse GraphBLAS is usually considered as the state-of-art implementation of this standart [GRB repo], there are a number of custom wrappers and implementations in Python [Orachev], C\# [gh], ...
+
+\subsection{Partial evaluation tools}
+...
+\section{Algorithms implementation}
+
+All algorithms were implemented using AnyDSL Impala domain-specific language [] for partial evaluation. Algorithm code is represented as computation kernels, which is further linked with Google Benchmark-based [] benchmarking code. Each algorithm was implemented in Impala twice: with partial evaluation language constructions and without them (therefore, with no partial evaluation).
+
+Also, every algorithm was implemented with an alternative tool or framework that is usually used in practice for algorithm implementation in the corresponding area. In details, the following programs were used:
+\begin{itemize}
+	\item \textcolor{green}{SuiteSparse GraphBLAS(link)} --- for graph algorithms in the terms of linear algebra
+	\item Grep and eGrep --- for algorithms on strings and regular expressions
+\end{itemize}
+
+All the code is placed on \textcolor{green}{GitHub (link)}.
+
+\section{Experimental design}
+
+In this section we will describe our experimental design for partial evaluation of selected algorithms using AnyDSL framework.
+
+\subsection{Experimental setup}
+
+Configuration of the experimental stand was:
+\begin{itemize}
+	\item Intel Core i5-7440HQ (4x3.8GHz) CPU
+	\item 16Gb RAM
+	\item Ubuntu 20.04
+\end{itemize}
+
+Tools' versions were fixed on the following commits from their official repositories:
+\begin{itemize}
+	\item Google Benchmark --- commit dated 22 December 2020
+	\item AnyDSL --- commit dated 8 December 2020
+	\item SuiteSparse GraphBLAS --- commit dated 14 July 2020
+\end{itemize}
+
+Default (e)Grep from Ubuntu 20.04 was employed.
+
+
+
+\subsection{Research questions}
+
+To evaluate our approach, we design experiments to address the following research questions:
+
+\begin{itemize}
+	\item[\textbf{Q1:}] Does partial evaluated benefits matrix-based string and graph algorithms performance (execution time) comparing to their basic versions?
+	\item[\textbf{Q2:}] In which degree partially evaluated algorithms code performance gets closer to their state-of-art implementations?
+	\item[\textbf{Q3:}] How does partial evaluator influences algorithms' code size?
+\end{itemize}
+
+\subsection{Result metrics}
+To evaluate the performance of partially evaluated code, we adopt the following widely used metrics for application performance:
+\begin{itemize}
+	\item \textbf{Execution time} is computed by Google Benchmark tool and measured in nanoseconds. For each of algorithm the tool gives three numbers: time spent in real life, time spent on CPU and iteration number. We took \textit{time spent in real life} in order to consider all hardware delays (for example, memory access delays).
+	
+	The smaller execution time is better.
+	
+	\item \textbf{Measure error} is computed by Google Benchmark tool and measured in percents. 
+	
+	Numbers smaller than $0.01\%$ are considered as good result which guarantees relatively small threat to validity.
+	
+	\item \textbf{Code ramification} metric consists of the number of lines of code in LLVM IR representation of algorithms generated by AnyDSL and the number of conditional jumps in this representation.
+	
+	The smaller code ramification is better.
+\end{itemize}
+
+\section{Results}
+
+\section{Threats to validity}
+
+\subsection{Subject selection bias}
+In our research we use only AnyDSL framework for the experiments. Another partial evaluation tools may give slightly different results due more or less aggressive optimizations or different evaluation techniques.
+
+\subsection{Used datasets}
+Despite trying to run experimental code on both versatile and special datasets, we admit that partially evaluated code could give slightly different measures on some other special degenerate matrix sets.
 
 \section{Related work}
 
