@@ -50,7 +50,7 @@
 }
 
 \begin{document}
-\linenumbers
+%\linenumbers
 \title{Empirical study of partial evaluation of matrix and string algorithms\\
 
 \thanks{Identify applicable funding agency here. If none, delete this.}
@@ -130,7 +130,7 @@ fn power5(x):
 Despite partial evaluation is initially being used by Ershov \cite{ershov1982mixed}, Jones \cite{jones1993partial} and other scientist in their work for compiler generation via Futamura projections \cite{futamura1983partial}, it could also be used for program optimization. For instance, a partial evaluator can employ static data to unfold loops and conditional operators, propagate constants, etc \cite{jones1993partial}. 
 
 % Difficulties of PE
-However partial evaluation is a powerful method of program optimization, it is inherent in several difficulties. Firstly, a partial evaluator could inflate source code size heavily because of transformation such as loop unfolding and static data substitution. Therefore, evaluation results (code structure, bottlenecks, etc.) \textcolor{red}{formal} assessment becomes a non-trivial problem very often. To solve this issue in some degree, modern tools like AnyDSL \cite{leissa2018anydsl} tends to translate evaluated code into some intermediate representation which is often much easier to understand and analyze. Secondly, divergent program partial evaluation with the application of average-quality tool may lead to the evaluation process divergence \cite{jones1993partial}. So, the programmer has to be very careful while using this technique for optimization purposes. Finally, partial evaluation imposes serious requirements on the programmer qualification: a deep understanding of the evaluation process is highly required. To solve the issue modern tools are introducing simplified language constructions, such as a special partial evaluation wrapper \cite{leissa2018anydsl}, attribute-driven evaluation \cite{10.1007/978-3-319-74313-4_27} and many other various and creative methods.
+However partial evaluation is a powerful method of program optimization, it is inherent in several difficulties. Firstly, a partial evaluator could inflate source code size heavily because of transformation such as loop unfolding and static data substitution. Therefore, evaluation results (code structure, bottlenecks, etc.) formal assessment becomes a non-trivial problem very often. To solve this issue in some degree, modern tools like AnyDSL \cite{leissa2018anydsl} tends to translate evaluated code into some intermediate representation which is often much easier to understand and analyze. Secondly, divergent program partial evaluation with the application of average-quality tool may lead to the evaluation process divergence \cite{jones1993partial}. So, the programmer has to be very careful while using this technique for optimization purposes. Finally, partial evaluation imposes serious requirements on the programmer qualification: a deep understanding of the evaluation process is highly required. To solve the issue modern tools are introducing simplified language constructions, such as a special partial evaluation wrapper \cite{leissa2018anydsl}, attribute-driven evaluation \cite{10.1007/978-3-319-74313-4_27} and many other various and creative methods.
 
 \subsection{Matrix algorithms}
 
@@ -188,7 +188,7 @@ Tools' versions were fixed on the following commits from their official reposito
 \begin{itemize}
 	\item Google Benchmark \cite{gbenchmark} --- commit dated 22 December 2020
 	\item AnyDSL \cite{leissa2018anydsl} --- commit dated 8 December 2020
-	\item SuiteSparse GraphBLAS \colorbox{red}{\cite{moreira2018implementing}} --- commit dated 14 July 2020
+	\item SuiteSparse GraphBLAS \cite{moreira2018implementing} --- commit dated 14 July 2020
 \end{itemize}
 
 Default (e)Grep from Ubuntu 20.04 was employed.
@@ -197,7 +197,7 @@ We used Harwell-Boeing matrix collection \cite{duff1992users} (a subset of it is
 
 For string algorithms, we used random strings and traffic dumps as sources and random strings or Latin words as patterns in order to show the results in a near-average case. Regular expressions (finite automata) were converted to COO sparse representation with our modification of Re2dfa tool \cite{re2dfa}. Our benchmark used ``short'' strings with the length smaller than 200 characters as static data to avoid generated code ramification and overhead creation.
 
-AnyDSL partial evaluation tool was executed in JIT-mode \colorbox{red}{\cite{leissa2018anydsl}}, which allows to perform partial evaluation at the run time.
+AnyDSL partial evaluation tool was executed in JIT-mode \cite{leissa2018anydsl}, which allows to perform partial evaluation at the run time.
 
 
 
@@ -273,7 +273,7 @@ This section presents our experimental results by addressing the research questi
 	\label{table_regex}
 \end{table*}
 
-As seen from Table \ref{table_graph} and Figure \ref{fig:multpe}, partial evaluation gives significant, more than several times, speed up on test cases involving \textit{2blocks} as right \textcolor{red}{multiplicator}. It may be explained with relatively distributed structure of \textit{2blocks} matrix non-zero elements, that allows partial evaluator to effectively perform optimizations like loop unfolding and constant propagation.\\
+As seen from Table \ref{table_graph} and Figure \ref{fig:multpe}, partial evaluation gives significant, more than several times, speed up on test cases involving \textit{2blocks} as right multiplicator. It may be explained with relatively distributed structure of \textit{2blocks} matrix non-zero elements, that allows partial evaluator to effectively perform optimizations like loop unfolding and constant propagation.\\
 In contrast, non-zero elements of \textit{eye3} matrix are concentrated near the main diagonal of the matrix which leads to relatively small execution time benefit (or absent) of partial evaluation --- loop unfolding does not discard any empty iterations.
 
 \begin{figure}[H]
@@ -302,9 +302,9 @@ The results show that in general partial evaluation with AnyDSL benefits string 
 
 Tables \ref{table_graph}, \ref{table_string} and \ref{table_regex} show the time (in nanoseconds) of execution of matrix-based graph and string algorithms respectively. 
 
-For the string algorithms, we can see that partially evaluated code outperforms Grep (for pattern matching) and eGrep (for regular expressions matching) in several times (2 to 10000) on each of the datasets. However AnyDSL beat (e)Grep in both pattern and regular expression matching problems, we could see that the latter gave by several orders of magnitude stronger results. According to our analysis, it could be the result of using COO representation for regular expression's transition graph in the experiment: linear structure of a COOrdinate list structure allows the partial evaluator to use more aggressive optimizations such as \textcolor{blue}{vectorization} or easier loop unfolding.
+For the string algorithms, we can see that partially evaluated code outperforms Grep (for pattern matching) and eGrep (for regular expressions matching) in several times (2 to 10000) on each of the datasets. However AnyDSL beat (e)Grep in both pattern and regular expression matching problems, we could see that the latter gave by several orders of magnitude stronger results. According to our analysis, it could be the result of using COO representation for regular expression's transition graph in the experiment: linear structure of a COOrdinate list structure allows the partial evaluator to use more aggressive optimizations such as vectorization or easier loop unfolding.
 
-For graph algorithms in a matrix form (matrix multiplication and Kronecker product), we may \textcolor{red}{observe} that partially evaluated algorithms' code underperforms code of the same algorithms implemented with SuiteSparse GraphBLAS \textcolor{red}{in} 10 times in average. It could be considered a good result, since non-partially evaluated code loses 100 times in half of cases.
+For graph algorithms in a matrix form (matrix multiplication and Kronecker product), we may observe that partially evaluated algorithms' code underperforms code of the same algorithms implemented with SuiteSparse GraphBLAS in 10 times in average. It could be considered a good result, since non-partially evaluated code loses 100 times in half of cases.
 
 To sum up, for the selected string algorithms partially evaluated code outperforms their industrial implementations by execution time in a high degree; for the selected graph algorithms in matrix form partially evaluated code lags behind their state-of-art implementation by a factor of 10 (which is a good result).
 
