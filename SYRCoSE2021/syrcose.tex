@@ -76,7 +76,7 @@ d.berezun@2009.spbu.ru}
 
 \begin{abstract}
 	
-This paper describes the experiments on the so-called partial evaluation technique applied to automatic execution time optimization of some algorithms usually used as a core of heavy-loaded programs. We used AnyDSL framework for partial evaluation of some basic matrix and string algorithms and compared execution times with the results of non-optimized code and execution times of commonly used tools. Our results show that partial evaluation with AnyDSL framework could result in up to 1000 times execution time reduction on several cases for basic matrix and string algorithms. We also provided an inside on related work and our future plans.
+This paper describes the empirical experiments on the so-called partial evaluation technique applied to automatic execution time optimization of general matrix and string algorithms. We used AnyDSL framework for partial evaluation and compared execution times with the results of non-optimized code with execution times of commonly used tools. Our results show that partial evaluation with AnyDSL framework could result in up to 1000 times execution time reduction on several cases for basic matrix and string algorithms. We also provided an inside on related work and our future plans.
 	
 \end{abstract}
 
@@ -93,9 +93,9 @@ For instance, the so-called \textit{partial evaluation} (or specialization) \cit
 Existing results in the area of applied usage of partial evaluation for automatic code optimization include image processing \cite{leissa2018anydsl}, bioinformatics \cite{muller2020anyseq} and ray tracing algorithms \cite{perard2019rodent}.
 
 
-In this paper, we will try to apply partial evaluation technique to a code of several algorithms usually utilized as core algorithms in areas connected with linear algebra and string processing. Experiments on partial evaluation of some matrix and string algorithms with AnyDSL \cite{leissa2018anydsl} framework and evaluating the suitability of the approach for application in industrial libraries and tools will be provided. We will also perform a compact overview of current research in the area and provide an inside on our future plans.
+In this paper, we applied partial evaluation technique to a code of several algorithms usually utilized as core algorithms in areas connected with linear algebra and string processing. Experiments on partial evaluation of some matrix and string algorithms with AnyDSL \cite{leissa2018anydsl} framework and evaluating the suitability of the approach for application in industrial libraries and tools are provided. We also performed a compact overview of current research in the area and provide an inside on our future plans.
 
-We will show that partial evaluation with AnyDSL could successfully improve code performance in the general cases.
+It is showed that partial evaluation with AnyDSL could successfully improve code performance in the general cases.
 
 
 \section{Background}
@@ -136,11 +136,13 @@ However partial evaluation is a powerful method of program optimization, it is i
 
 Algorithms on matrices (matrix-matrix, matrix-vector multiplication, tensor product, etc.) are very common in programs connected with linear algebra and linear algebra packages (BLAS).
 
-For example, it is widely known that many graph algorithms could be explained in the language of matrices \cite{kepner2011graph,davis2019algorithm}. Linear algebra allows constructing algorithms like Breadth-First Search or Shortest Path Search with the exploitation of basic linear algebra operations: matrix multiplication, Kronecker product and some other algorithms. Therefore, if it was possible to speed up different matrix multiplication algorithms, it would be possible to speed up a large class of algorithms. 
+For example, it is widely known that many graph algorithms could be explained in the language of matrices \cite{kepner2011graph,davis2019algorithm}. Linear algebra allows constructing algorithms like Breadth-First Search or Shortest Path Search with the exploitation of basic linear algebra operations: matrix multiplication, Kronecker product and some other algorithms. Therefore, if it was possible to speed up different matrix multiplication algorithms, it should be possible to speed up a large class of algorithms. 
 
 One of the possible basic sets of linear algebra algorithms and operations for graph algorithm construction is named \textit{GraphBLAS} standard \cite{davis2019algorithm,moreira2018implementing}. For our experiments we chose \textit{matrix-matrix multiplication}, and \textit{Kronecker (tensor) product} algorithms \cite{cormen2009introduction}, which are considered as one of the core algorithms in GraphBLAS standard.
 
-The results of matrix algorithms benchmarking will be compared with the execution time of these algorithms implemented with SuiteSparse GraphBLAS library \cite{moreira2018implementing}, which is usually considered as the state-of-art implementation of GraphBLAS.
+The results of matrix algorithms benchmarking are compared with the execution time of these algorithms implemented with SuiteSparse GraphBLAS library \cite{moreira2018implementing}, which is usually considered as the state-of-art implementation of GraphBLAS.
+
+Before the experiments we predicted in theory that both of these algorithms could be successfully (without at least noticeable lose in performance) partially evaluated due to linear structure of their code and a relatively small number of conditional jumps in the proper implementation.
 
 
 \subsection{Algorithms on strings}
@@ -150,6 +152,8 @@ Algorithms on strings are employed in different like regular expression handling
 Also, a pattern matching algorithm is often utilized in so-called KMP-Test \cite{jones1993partial}. It shows how effectively the partial evaluator could optimize trivial substring search algorithm measured in a degree of efficiency approximation to Knuth-Morris-Pratt algorithm execution time. Therefore, partial evaluation of this algorithm could give us the essential data for the analysis.
 
 We used adjacency matrices as regular expression automata representation since the matrix-based regular expression matching algorithm's code is in a more linear form, so we predict it should be evaluated better.
+
+Existing results \cite{jones1993partial} shows that both of these algorithms could be successfully partially evaluated and AnyDSL tool is considered by us as a ``good enough'' tool to show this theoretically good result in practice.
 
 \section{Algorithms implementation}
 
@@ -169,7 +173,7 @@ All the code is placed on GitHub:
 
 \section{Experimental design}
 
-In this section, we will describe our experimental design for partial evaluation of selected algorithms using AnyDSL framework.
+In this section, our experimental design for partial evaluation of selected algorithms using AnyDSL framework is described.
 
 \subsection{Experimental setup}
 
@@ -189,9 +193,9 @@ Tools' versions were fixed on the following commits from their official reposito
 
 Default (e)Grep from Ubuntu 20.04 was employed.
 
-We used Harwell-Boeing matrix collection \cite{duff1992users} (a subset of it is also known as SuiteSparse matrix collection \cite{davis2011university}) because it contains a reasonably diverse set of matrices. COO (COOrdinate list) sparse matrix format was used.
+We used Harwell-Boeing matrix collection \cite{duff1992users} (a subset of it is also known as SuiteSparse matrix collection \cite{davis2011university}) because it contains a reasonably diverse set of matrices. COO (COOrdinate list) sparse matrix format was used. In details, we got (both matrix-matrix product and Kronecker product) 4 sparse matrices taken from these sets: \textit{bcsstk16}, \textit{fs1831}, \textit{2blocks} and \textit{eye3}. First 2 of them could be considered as big and the last 2 are relatively small. \textit{bcsstk16} and \textit{2blocks} are of average structure without boundary cases, while  the elements of \textit{fs1831} and \textit{eye3} are concentrated near the main diagonal. Our benchmark used ``small'' matrices \textit{2blocks} and \textit{eye3} as static data during partial evaluation to prevent output code ramification and performance overhead creation.
 
-For string algorithms, we used random strings and traffic dumps as sources and random strings or Latin words as patterns. Regular expressions (finite automata) were converted to COO sparse representation with our modification of Re2dfa tool \cite{re2dfa}.
+For string algorithms, we used random strings and traffic dumps as sources and random strings or Latin words as patterns in order to show the results in a near-average case. Regular expressions (finite automata) were converted to COO sparse representation with our modification of Re2dfa tool \cite{re2dfa}. Our benchmark used ``short'' strings with the length smaller than 200 characters as static data to avoid generated code ramification and overhead creation.
 
 AnyDSL partial evaluation tool was executed in JIT-mode \colorbox{red}{\cite{leissa2018anydsl}}, which allows to perform partial evaluation at the run time.
 
@@ -269,7 +273,7 @@ This section presents our experimental results by addressing the research questi
 	\label{table_regex}
 \end{table*}
 
-For matrix algorithms (both matrix-matrix product and Kronecker product), 4 matrices were taken from Harwell-Boeing: \textit{bcsstk16}, \textit{fs1831}, \textit{2blocks} and \textit{eye3}. As seen from Table \ref{table_graph} and Figure \ref{fig:multpe}, partial evaluation gives significant, more than several times, speed up on test cases involving \textit{2blocks} as right \textcolor{red}{multiplicator}. It may be explained with relatively distributed structure of \textit{2blocks} matrix non-zero elements, that allows partial evaluator to effectively perform optimizations like loop unfolding and constant propagation.\\
+As seen from Table \ref{table_graph} and Figure \ref{fig:multpe}, partial evaluation gives significant, more than several times, speed up on test cases involving \textit{2blocks} as right \textcolor{red}{multiplicator}. It may be explained with relatively distributed structure of \textit{2blocks} matrix non-zero elements, that allows partial evaluator to effectively perform optimizations like loop unfolding and constant propagation.\\
 In contrast, non-zero elements of \textit{eye3} matrix are concentrated near the main diagonal of the matrix which leads to relatively small execution time benefit (or absent) of partial evaluation --- loop unfolding does not discard any empty iterations.
 
 \begin{figure}[H]
@@ -324,7 +328,9 @@ Firstly, it is measured \cite{tyurin2020optimizing} that partial evaluation of m
 
 Secondly, partial evaluation was applied for Viterbi algorithm optimization \cite{viterbiseim}. It was discovered that the evaluated version of the code outperforms the non-evaluated one by 1.5 times in some cases.
 
-Also, AnyDSL team performed research \cite{perard2019rodent} on the application of partial evaluation for ray tracing purposes in their library named Rodent. It was measured that partial evaluation makes an improvement in execution time of around $25\%$ on selected datasets.
+Moreover, AnyDSL team performed research \cite{perard2019rodent} on the application of partial evaluation for ray tracing purposes in their library named Rodent. It was measured that partial evaluation makes an improvement in execution time of around $25\%$ on selected datasets.
+
+Also, several other partial evaluators could be used instead of AnyDSL for matrix and string algorithms code optimization. For instance, it could be LLVM.mix, which was successfully applied for database query optimization \cite{sharygin2017runtime}, or C-mix \cite{jones1993partial}.
 
 \section{Future work}
 
