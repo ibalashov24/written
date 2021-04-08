@@ -17,6 +17,37 @@
 \usepackage{hyperref}
 \usepackage{tabularx,booktabs,longtable}
 
+\usepackage{listings}     
+\usepackage{lstautogobble}  % Fix relative indenting
+\usepackage{color}          % Code coloring
+%\usepackage{zi4}            % Nice font
+
+\definecolor{bluekeywords}{rgb}{0.13, 0.13, 1}
+\definecolor{greencomments}{rgb}{0, 0.5, 0}
+\definecolor{redstrings}{rgb}{0.9, 0, 0}
+\definecolor{graynumbers}{rgb}{0.5, 0.5, 0.5}
+
+\usepackage{listings}
+\lstset{
+	autogobble,
+	columns=fullflexible,
+	showspaces=false,
+	showtabs=false,
+	breaklines=true,
+	showstringspaces=false,
+	breakatwhitespace=true,
+	escapeinside={(*@}{@*)},
+	commentstyle=\color{greencomments},
+	keywordstyle=\color{bluekeywords},
+	stringstyle=\color{redstrings},
+	numberstyle=\color{graynumbers},
+	basicstyle=\ttfamily\footnotesize,
+	frame=l,
+	framesep=12pt,
+	xleftmargin=12pt,
+	tabsize=4,
+	captionpos=b
+}
 
 \begin{document}
 \linenumbers
@@ -39,7 +70,7 @@ s.v.grigoriev@spbu.ru
 \IEEEauthorblockN{Daniil Berezun}
 \IEEEauthorblockA{\textit{Saint Petersburg State University} \\
 7/9 Universitetskaya nab., \\ St. Petersburg, 199034 Russia \\
-\textcolor{red}{SPBU email!}}
+d.berezun@2009.spbu.ru}
 }
 \maketitle
 
@@ -84,6 +115,22 @@ Let's suppose:
 	\item $\llbracket P \rrbracket [a_1, a_2, .., a_m] = \llbracket P_a \rrbracket [a_2, .., a_m]$
 \end{itemize}
 Then the transformation of $P$ and $a_1$ to $P_a$ using $mix$ is called \textit{partial evaluation} \cite{jones1993partial}. Program $mix$ is called \textit{partial evaluator}. In other words, partial evaluation is a technique for evaluating parts of the program ahead of compilation with the usage of static input data.
+
+Classic example of partial evaluation is evaluation of power function. Code with linear complexity from Listing \ref{lst:power} could be partially evaluated using the knowledge of static power. So, assuming $n = 5$ code with constant complexity on Listing \ref{lst:power5} could be received.
+
+\begin{lstlisting}[caption={Power function before evaluation},label={lst:power}]
+fn power(x, n):
+	if x == 1:
+		x
+	else:
+		x * power(x, n - 1)
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Power function partially evaluation using n = 5},label={lst:power5}]
+fn power5(x):
+	x*x*x*x*x
+\end{lstlisting}
+
 
 Despite partial evaluation is initially being used by Ershov \cite{ershov1982mixed}, Jones \cite{jones1993partial} and other scientist in their work for compiler generation via Futamura projections \cite{futamura1983partial}, it could also be used for program optimization. For instance, partial evaluator can employ static data to unfold loops and conditional operators, propagate constants, etc \cite{jones1993partial}. 
 
@@ -227,8 +274,15 @@ This section presents our experimental results by addressing the research questi
 	\label{table_regex}
 \end{table*}
 
-For matrix algorithms (both matrix-matrix product and Kronecker product), 4 matrices were taken from Harwell-Boeing: \textit{bcsstk16}, \textit{fs1831}, \textit{2blocks} and \textit{eye3}. As seen from Table \ref{table_graph}, partial evaluation gives significant, more than several times, speed up on test cases involving \textit{2blocks} as right \textcolor{red}{multiplicator}. It may be explained with relatively distributed structure of \textit{2blocks} matrix non-zero elements, that allows partial evaluator to effectively perform optimizations like loop unfolding and constant propagation.\\
-In contrast, non-zero elements of \textit{eye3} matrix are concentrated near the main diagonal of the matrix, that leads to relatively small execution time benefit of partial evaluation --- loop unfolding does not discard any empty iterations.
+For matrix algorithms (both matrix-matrix product and Kronecker product), 4 matrices were taken from Harwell-Boeing: \textit{bcsstk16}, \textit{fs1831}, \textit{2blocks} and \textit{eye3}. As seen from Table \ref{table_graph} and Figure \ref{fig:multpe}, partial evaluation gives significant, more than several times, speed up on test cases involving \textit{2blocks} as right \textcolor{red}{multiplicator}. It may be explained with relatively distributed structure of \textit{2blocks} matrix non-zero elements, that allows partial evaluator to effectively perform optimizations like loop unfolding and constant propagation.\\
+In contrast, non-zero elements of \textit{eye3} matrix are concentrated near the main diagonal of the matrix, that leads to relatively small execution time benefit (or absent) of partial evaluation --- loop unfolding does not discard any empty iterations.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.6]{matrix-mult}
+	\caption{Comparison of matrix-matrix multiplication algorithm execution times before and after partial evaluation}
+	\label{fig:multpe}
+\end{figure}
 
 For string algorithms, we may observe much more noticeable execution time increase after partial evaluation than in graph algorithms. As could be seen from Table \ref{table_string} and Table \ref{table_regex}, the speed up lays between 10 and 100 times depending on the test. The reason of such a significant increase is that the most of iterations in classic substring search and pattern matching algorithms \cite{cormen2009introduction} with matrix input are not empty, like in previously discussed algorithms on sparse matrices graphs. Also, in substring search algorithm evaluation is simplified by the fact that the data is being iterated successively.\\
 Moreover, there is absent of non-logical operations with both source and pattern data as operands in these algorithms, so the partial evaluator is able to apply constant propagation optimization heavily due to trivial data separation.
@@ -271,7 +325,9 @@ Despite trying to run experimental code on both versatile and special datasets, 
 
 Partial evaluation of linear algebra (especially matrix algorithms) was studied before in several papers.
 
-Firstly, our colleagues measured \cite{tyurin2020optimizing} that partial evaluation of matrix convolution and pattern matching algorithms using AnyDSL framework and CUDA reduces execution times significantly on the most datasets.
+Firstly, it is measured \cite{tyurin2020optimizing} that partial evaluation of matrix convolution and pattern matching algorithms using AnyDSL framework and CUDA reduces execution times up to 8 times on the most datasets.
+
+Secondly, partial evaluation was applied for Viterbi algorithm optimization \cite{viterbiseim}. It was discovered that evaluated version of the code outperforms non-evaluated one by 1.5 times in some cases.
 
 Also, AnyDSL team performed research \cite{perard2019rodent} on application of partial evaluation for ray tracing purposes in their library named Rodent. It was measured that partial evaluation  makes an improvement in execution time of around $25\%$ on selected datasets.
 
