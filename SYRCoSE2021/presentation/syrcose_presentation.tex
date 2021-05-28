@@ -1,0 +1,404 @@
+\documentclass{beamer}
+\usepackage{beamerthemesplit}
+\usepackage{wrapfig}
+\usetheme{SPbGU}
+\usepackage{pdfpages}
+\usepackage{amsmath}
+\usepackage{cmap} 
+\usepackage[T2A]{fontenc} 
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{indentfirst}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage{multirow}
+\usepackage[noend]{algpseudocode}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usetikzlibrary{shapes,arrows}
+\usepackage{fancyvrb}
+
+\usepackage{stmaryrd}
+\usepackage{caption}
+\usepackage{svg}
+
+\usepackage{appendixnumberbeamer}
+
+\newtheorem{rutheorem}{Теорема}
+\newtheorem{ruproof}{Доказательство}
+\newtheorem{rudefinition}{Определение}
+\newtheorem{rulemma}{Лемма}
+
+\beamertemplatenavigationsymbolsempty
+
+\usepackage{caption}
+\captionsetup[table]{name=Table}
+
+
+\title[Empirical Partial Evaluation Experiments]{Empirical Study of Partial Evaluation of Matrix and String Algorithms}
+\subtitle[]{}
+% То, что в квадратных скобках, отображается в левом нижнем углу. 
+\institute[SPbU]{
+}
+
+% То, что в квадратных скобках, отображается в левом нижнем углу.
+\author[Ilya Balashov, et al.]{\underline{Ilya Balashov}\\ Daniil Berezun \\ Semyon Grigorev \\
+  % У научного руководителя должна быть указана научная степень
+  % У научного руководителя должна быть указана научная степень
+  \bigskip
+	Saint Petersburg State University \bigskip \\ SYRCoSE'21
+}
+
+\date{\vspace{-1cm} May 28, 2021}
+
+\definecolor{orange}{RGB}{179,36,31}
+
+\begin{document}
+{
+% Лого университета или организации, отображается в шапке титульного листа
+\begin{frame}
+\vspace{10pt}
+\begin{figure}
+	
+	\begin{minipage}{1.0\textwidth}
+		\centering
+		\includegraphics[width=1.5cm]{pictures/SPbGU_Logo.png}
+	\end{minipage}
+\end{figure}
+\vspace{-7pt}
+\hspace{-10pt}
+\begin{center}
+   \begin{tabular}{c}
+    \end{tabular}
+\titlepage
+\vspace{-15pt}
+{\scriptsize
+ {
+ \begin{tabular} {p{1.5cm} r l} 
+ 
+ \end{tabular}
+ }}
+  \\
+  \vspace{32pt}
+
+  \end{center}
+
+\end{frame}
+}
+            
+
+\begin{frame}
+	\transwipe[direction=90]
+	\frametitle{Introduction: Partial Evaluation and Huge Programs}
+	\begin{itemize}
+		\item Huge programs often have core parts, which are heavily loaded or employed by a large number of other parts
+		\begin{itemize}
+			\item Matrix multiplication algorithms in BLAS
+			\item Pattern and automaton matching in programs on strings
+		\end{itemize} \vfill
+		\item Optimization of core parts $\equiv$ optimization of the whole program \vfill
+		\item It is difficult to write well-optimized programs
+		\begin{itemize}
+			\item Helper tools and methods are needed
+		\end{itemize}\vfill
+	
+	
+		\item \textit{Partial Evaluation} --- one of such a methods\vfill
+	\end{itemize}
+	
+	
+\end{frame}
+
+
+
+\begin{frame}
+	\frametitle{In This Report...}
+	Partial evaluation applied to a linear algebra and string algorithms. \vfill	
+	
+	
+	\begin{enumerate}
+	\item Brief introduction to the background
+	\begin{itemize}
+		\item Partial evaluation
+		\item Algorithms for the experiments
+	\end{itemize}\vfill
+	\item Algorithms implementation\vfill
+	\item Experimental design\vfill
+	\item Results\vfill
+	\item Related \& future work
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}
+	\transwipe[direction=90]
+	\frametitle{Background: Partial Evaluation}
+	\begin{itemize}
+		\item Method of program transformation 	
+		\begin{itemize}
+			\item Tool --- Partial Evaluator
+		\end{itemize}\vfill
+	
+		\item $\llbracket F \rrbracket [a, b] = \llbracket F_b \rrbracket [a]$ 	
+		\begin{itemize}
+			\item $F_b$ could be faster, smaller and easier than $F$
+		\end{itemize}\vfill
+		
+		
+		\item Also used for compiler generation
+		\begin{itemize}
+			\item Futamura projections
+		\end{itemize} \vfill
+	
+		\item We chose AnyDSL framework	
+		\begin{itemize}
+			\item DSL Impala and Artic
+			\item Previously applied in several areas:
+			\begin{itemize}
+				\item Image processing
+				\item Bioinformatics
+				\item Ray tracing
+			\end{itemize}
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Background: Algorithms}
+
+	\begin{itemize}
+		\item Matrix algorithms
+		\begin{itemize}
+			\item Matrix multiplication
+			\item Kronecker (tensor) product
+		\end{itemize}\vfill
+		\item String processing algorithms
+		\begin{itemize}
+			\item Pattern matching
+			\item Regular expression matching (in matrix form)
+		\end{itemize}\vfill
+		\item Applied widely both in science and industry
+		\begin{itemize}
+			\item GraphBLAS primitives
+			\item KMP-test
+			\item Utilities like Grep
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Experimental Design: Questions}
+	Research questions: \vfill
+	\begin{itemize}
+	\item[Q1] Does partial evaluated benefits string and matrix-based
+	graph algorithms performance comparing to their basic versions?\vfill
+	\item[Q2] In which degree partially evaluated algorithms code performance gets closer to their state-of-art implementations?
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Experimental Design: Datasets}
+	
+	\begin{itemize}
+		\item For matrix algorithms 
+		\begin{itemize}
+			\item SuiteSparse matrix collection
+			\item Harwell-Boeing matrix collection
+		\end{itemize} \vfill
+		
+		\item For algorithms on string
+		\begin{itemize}
+			\item Autogenerated strings
+			\item Traffic dumps
+			\item Regular expressions from \url{regexlib.com} catalog
+		\end{itemize}\vfill
+		
+		\item We chose data with the diverse configuration
+		\begin{itemize}
+			\item Tried to cover more basic test cases
+			\item Used degenerate cases
+			\item A lot of different $\implies$ less threats to validity
+		\end{itemize}
+		
+	\end{itemize}
+	
+\end{frame}
+
+
+\begin{frame}{Results: Matrices}
+\begin{itemize}
+	\item Intel i5-7440HQ, 16GB RAM
+	\item (Non)Specialized code in AnyDSL Impala
+	\item Google Benchmark
+	\item Only ``interesting`` cases are shown
+\end{itemize} \vfill
+
+\begin{figure}
+		\begin{minipage}{.5\textwidth}
+			\includegraphics[scale=0.35]{../../../../Github/LinearAlgebraImpala/MatrixMultiplication/Charts/impala_new_en} 
+			\caption*{\small Matrix multiplication}
+		\end{minipage}\hfill
+		\begin{minipage}{.5\textwidth}
+			\includegraphics[scale=0.35]{../../../../Github/LinearAlgebraImpala/TensorProduct/JitBenchmark/Charts/tensor_new_en}
+			\caption*{\small Kronecker product}
+		\end{minipage}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Results: Strings}
+\begin{figure}
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\begin{minipage}{.5\textwidth}
+			\centering
+			\includegraphics[scale=0.35]{~/Github/LinearAlgebraImpala/SubstringSearch/Charts/substring_1_en}
+		\end{minipage}\hfill
+		\begin{minipage}{.5\textwidth}
+			\centering
+			\includegraphics[scale=0.35]{~/Github/LinearAlgebraImpala/SubstringSearch/Charts/substring_2_en}
+		\end{minipage}
+		\caption*{\small Pattern matching}
+	\end{minipage}\hfill
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\includegraphics[scale=0.35]{~/Github/LinearAlgebraImpala/AutomataSearch/Charts/automata_en}
+		\caption*{\small Regular expressions}
+	\end{minipage}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Comparison with SuiteSparse GraphBLAS}
+	\begin{figure}
+		\begin{minipage}{.5\textwidth}
+			\includegraphics[scale=0.35]{~/Github/LinearAlgebraImpala/MatrixMultiplication/Charts/impala_new_sp_en}
+			\caption*{\small Matrix multplication}
+		\end{minipage}\hfill
+		\begin{minipage}{.5\textwidth}
+			
+			\includegraphics[scale=0.35]{~/Github/LinearAlgebraImpala/TensorProduct/JitBenchmark/Charts/kronecker_sp_new_en}
+			\caption*{\small Kronecker product}
+		\end{minipage}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Comparison with (e)Grep}
+	\begin{figure}
+		\begin{minipage}{.5\textwidth}
+			\centering
+			\begin{minipage}{1.0\textwidth}
+				\centering
+				
+				\includegraphics[scale=0.35]{~/Github/LinearAlgebraImpala/SubstringSearch/Charts/substring_suitesp}
+			\end{minipage}\hfill
+			
+			\caption*{\small Pattern matching}
+		\end{minipage}\hfill
+		\begin{minipage}{.5\textwidth}
+			\centering
+			\includegraphics[scale=0.35]{~/Github/LinearAlgebraImpala/AutomataSearch/Charts/automata_suitesp}
+			\caption*{\small Regular expressions}
+		\end{minipage}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}{Results: In General}
+		\begin{itemize}
+			\item 10$\%$ to 100 times speedup for nearly all tested algorithms comparing to non-partially evaluated code
+			\item 2--5 time to 3 orders win by time in comparison with (e)Grep
+			\item SuiteSparse won 5 times against partially evaluated code
+				\begin{itemize}
+					\item Good result for an semi-automatic optimization
+					\item We still won 10+ times comparing to non-evaluated code
+					\item The code was optimized on compile-time --- no need for a heavy library
+				\end{itemize}
+		\end{itemize}
+	
+\end{frame}
+
+\begin{frame}{Related and Future Work}
+\begin{itemize}
+	\item Wide set of directions for the future
+	\begin{itemize}
+		\item More complex algorithms
+		\item Another tools \& languages (AnyDSL Artic)
+		\item GPGPU
+	\end{itemize}\vfill
+
+	\item Related covers a lot of topics
+	\begin{itemize}
+		\item Ray tracing/Bioinformatics/Image processing (AnyDSL team)
+		\item Viterbi algorithm specialization (Ivan Tyulyandin, SEIM'21)
+		\item CUDA specialization (Alexey Tyurin, PPoPP'20)
+	\end{itemize}
+\end{itemize}
+\end{frame}
+
+\appendix
+
+
+\begin{frame}{Appendix: Full Matrix List}
+	\begin{table}
+		\begin{tabular}{|l|l|l|l|l|}
+			\hline
+			& Size & Not Null & Symmetry, \% & Value Type \\ \hline
+			\textit{bcsstk16}   & 4884 & 147631  & 100          & real   \\ \hline
+			\textit{fs\_183\_1} & 183  & 1069    & 41.8         & real   \\ \hline
+			\textit{can\_256}   & 256  & 2916    & 100          & binary \\ \hline
+			\textit{eye3}       & 3    & 3       & 100          & binary \\ \hline
+			\textit{2blocks}    & 4    & 8       & 100          & binary \\ \hline
+			\textit{cover}      & 8    & 12      & 16.67        & binary \\ \hline
+			\textit{mycielskian3}        & 6    & 5       & 0            & binary \\ \hline
+			\textit{trec5}               & 8    & 12      & 0            & real   \\ \hline
+		\end{tabular} \bigskip
+		\centering
+		\caption{Matrices used in partial evaluation expriments}
+	\end{table}
+	
+\end{frame}
+
+\begin{frame}{Appendix: Full Results of Matrix Multiplication Experiments}
+	
+	\begin{table}
+		\begin{tabular}{|l|l|l|l|l|l|}
+			\hline
+			\begin{tabular}[c]{@{}l@{}}\\Time, ns.\\ Spec/NoSpec/SP \\ $\Delta < 0.01\%$ \end{tabular} & $\times$ \textit{eye3}                                                          & $\times$ \textit{2blocks}                                                        &  $\times$ \textit{cover}                                                           & $\times$ \textit{my...3}                                                   & $\times$ \textit{trec5}                                                          \\ \hline
+			\textit{bcsstk16} $\times$                                                                        & \begin{tabular}[c]{@{}l@{}}93608\\ 121855\\ 2270\end{tabular} & \begin{tabular}[c]{@{}l@{}}133434\\ 157850\\ 7064\end{tabular} & \begin{tabular}[c]{@{}l@{}}364772\\ 4842889\\ 8559\end{tabular} & \begin{tabular}[c]{@{}l@{}}171085\\ 2129094\\ 511\end{tabular} & \begin{tabular}[c]{@{}l@{}}308535\\ 5226893\\ 505\end{tabular} \\ \hline
+			\textit{fs\_183\_1} $\times$                                                                          & \begin{tabular}[c]{@{}l@{}}7796\\ 6752\\ 2553\end{tabular}    & \begin{tabular}[c]{@{}l@{}}20187\\ 42353\\ 12310\end{tabular}  & \begin{tabular}[c]{@{}l@{}}6928\\ 38250\\ 9796\end{tabular}     & \begin{tabular}[c]{@{}l@{}}1358\\ 15194\\ 506\end{tabular}     & \begin{tabular}[c]{@{}l@{}}6078\\ 42493\\ 507\end{tabular}     \\ \hline
+			\textit{can\_256} $\times$                                                                       & \begin{tabular}[c]{@{}l@{}}1016\\ 1177\\ 2259\end{tabular}    & \begin{tabular}[c]{@{}l@{}}5106\\ 38221\\ 6549\end{tabular}    & \begin{tabular}[c]{@{}l@{}}20339\\ 66987\\ 9409\end{tabular}    & \begin{tabular}[c]{@{}l@{}}2561\\ 23105\\ 503\end{tabular}     & \begin{tabular}[c]{@{}l@{}}9548\\ 62668\\ 506\end{tabular}     \\ \hline
+		\end{tabular}\bigskip
+		\centering
+		\caption{Execution times for matrix multiplication experiments}
+	\end{table}
+	
+\end{frame}
+
+\begin{frame}{Appendix: Full Results of Kronecker Product Experiments}
+	
+	\begin{table}
+		\begin{tabular}{|l|l|l|l|l|l|}
+			\hline
+			\begin{tabular}[c]{@{}l@{}}\\Time, ns.\\Spec/NoSpec/SP \\ $\Delta < 0.01\%$ \end{tabular} & $\otimes$ \textit{eye3}                                                             & $\otimes$ \textit{2blocks}                                                            & $\otimes$ \textit{cover}                                                              & $\otimes$ \textit{my...3}                                                       & $\otimes$ \textit{trec5}                                                              \\ \hline
+			\textit{bcsstk16}    $\otimes$                                                                     & \begin{tabular}[c]{@{}l@{}}140628\\ 140744\\ 901878\end{tabular} & \begin{tabular}[c]{@{}l@{}}276222\\ 3032308\\ 2145104\end{tabular} & \begin{tabular}[c]{@{}l@{}}433397\\ 4307538\\ 4420688\end{tabular} & \begin{tabular}[c]{@{}l@{}}276433\\ 1967189\\ 2958016\end{tabular} & \begin{tabular}[c]{@{}l@{}}481805\\ 4571625\\ 1440326\end{tabular} \\ \hline
+			\textit{fs\_183\_1 } $\otimes$                                                                         & \begin{tabular}[c]{@{}l@{}}916\\ 934\\ 25833\end{tabular}        & \begin{tabular}[c]{@{}l@{}}2186\\ 21272\\ 45159\end{tabular}       & \begin{tabular}[c]{@{}l@{}}3046\\ 31732\\ 88847\end{tabular}       & \begin{tabular}[c]{@{}l@{}}1838\\ 14533\\ 35109\end{tabular}       & \begin{tabular}[c]{@{}l@{}}3146\\ 34356\\ 47912\end{tabular}       \\ \hline
+			\textit{can\_256 } $\otimes$                                                                       & \begin{tabular}[c]{@{}l@{}}1159\\ 1069\\ 35162\end{tabular}      & \begin{tabular}[c]{@{}l@{}}2772\\ 30841\\ 60600\end{tabular}       & \begin{tabular}[c]{@{}l@{}}4512\\ 45731\\ 130084\end{tabular}      & \begin{tabular}[c]{@{}l@{}}2736\\ 22079\\ 43479\end{tabular}       & \begin{tabular}[c]{@{}l@{}}4576\\ 49512\\ 61500\end{tabular}       \\ \hline
+		\end{tabular}\bigskip
+		\centering
+		\caption{Execution times for Kronecker product experiments}
+		
+	\end{table}
+\end{frame}
+
+
+
+\begin{frame}{Appendix: Pure C Comparison}
+	\begin{figure}
+		\includegraphics[scale=0.6]{~/Github/LinearAlgebraImpala/MatrixMultiplication/Charts/impala_c_jit_comparison}
+		\centering
+	\end{figure}
+
+\end{frame}
+
+
+\end{document}
